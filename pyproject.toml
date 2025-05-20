@@ -1,0 +1,15 @@
+[project]
+name = "gemini-graphiti"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=2.3.4",
+    "graphiti-core[google-genai]>=0.11.6",
+    "flask>=3.1.0",
+    "litellm>=1.57.8",
+    "openai>=1.59.6",
+    "python-dotenv>=1.0.1",
+    "tiktoken>=0.8.0",
+]
