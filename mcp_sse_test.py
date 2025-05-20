@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import json
 import os
@@ -70,6 +71,49 @@ async def add_graphiti_episode(
     except Exception as e:
         print(f"An error occurred: {e}")
         raise
+
+
+async def cli_menu():
+    parser = argparse.ArgumentParser(description="Interact with Graphiti server.")
+    parser.add_argument(
+        "--action",
+        choices=["add", "search", "clear"],
+        help="Choose an action: add, search, or clear",
+    )
+    parser.add_argument("--name", help="Name for add_episode")
+    parser.add_argument("--episode_body", help="Episode body for add_episode")
+    parser.add_argument("--source", default="text", help="Source for add_episode")
+    parser.add_argument(
+        "--source_description", default="", help="Source description for add_episode"
+    )
+    parser.add_argument("--group_id", default="test_graph_group", help="Group ID")
+    parser.add_argument("--uuid", help="UUID for add_episode")
+    parser.add_argument("--query", help="Query for search_nodes")
+
+    args = parser.parse_args()
+
+    if args.action == "add":
+        if not args.name or not args.episode_body:
+            print("Name and episode_body are required for add action.")
+            return
+        await add_graphiti_episode(
+            GRAPHITI_SERVER_URL,
+            name=args.name,
+            episode_body=args.episode_body,
+            source=args.source,
+            source_description=args.source_description,
+            group_id=args.group_id,
+            uuid=args.uuid,
+        )
+    elif args.action == "search":
+        if not args.query:
+            print("Query is required for search action.")
+            return
+        await search_graphiti_episode(GRAPHITI_SERVER_URL, args.query)
+    elif args.action == "clear":
+        await clear_db(GRAPHITI_SERVER_URL)
+    else:
+        print("Please specify an action: add, search, or clear")
 
 
 async def search_graphiti_episode(
@@ -169,4 +213,5 @@ async def main():
 
 if __name__ == "__main__":
     print(f"Attempting to connect to Graphiti server at {GRAPHITI_SERVER_URL}")
-    asyncio.run(main())
+    # asyncio.run(main())
+    asyncio.run(cli_menu())
