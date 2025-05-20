@@ -262,5 +262,4 @@ async def main():
 
 if __name__ == "__main__":
     print(f"Attempting to connect to Graphiti server at {GRAPHITI_SERVER_URL}")
-    # asyncio.run(main())
     asyncio.run(cli_menu())
