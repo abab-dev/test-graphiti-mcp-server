@@ -1,4 +1,3 @@
-import argparse
 import asyncio
 import json
 import os
@@ -71,6 +70,56 @@ async def add_graphiti_episode(
     except Exception as e:
         print(f"An error occurred: {e}")
         raise
+
+
+async def get_user_choice():
+    print("\nChoose an action:")
+    print("1. Add an episode")
+    print("2. Search for nodes")
+    print("3. Clear the graph")
+    print("4. Exit")
+
+    while True:
+        choice = input("Enter your choice (1-4): ")
+        if choice in ["1", "2", "3", "4"]:
+            return choice
+        else:
+            print("Invalid choice. Please enter a number between 1 and 4.")
+
+
+async def cli_menu():
+    while True:
+        choice = await get_user_choice()
+
+        if choice == "1":
+            name = input("Enter episode name: ")
+            episode_body = input("Enter episode body: ")
+            source = input("Enter source (default: text): ") or "text"
+            source_description = input("Enter source description: ")
+            group_id = input("Enter group ID (default: test_graph_group): ") or "test_graph_group"
+            uuid_str = input("Enter UUID (optional): ")
+            uuid_value = uuid_str if uuid_str else None
+
+            await add_graphiti_episode(
+                GRAPHITI_SERVER_URL,
+                name=name,
+                episode_body=episode_body,
+                source=source,
+                source_description=source_description,
+                group_id=group_id,
+                uuid=uuid_value,
+            )
+
+        elif choice == "2":
+            query = input("Enter your search query: ")
+            await search_graphiti_episode(GRAPHITI_SERVER_URL, query)
+
+        elif choice == "3":
+            await clear_db(GRAPHITI_SERVER_URL)
+
+        elif choice == "4":
+            print("Exiting...")
+            break
 
 
 async def cli_menu():
