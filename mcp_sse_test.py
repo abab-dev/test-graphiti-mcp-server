@@ -76,7 +76,7 @@ async def add_direct():
     # Add episodes to the graph
     for i, episode in enumerate(episodes[1:2]):
         await graphiti.add_episode(
-            name=f"Freakonomics Radio {i}",
+            name=episode["name"]
             episode_body=(
                 episode["episode_body"]
                 if isinstance(episode["episode_body"], str)
@@ -86,7 +86,7 @@ async def add_direct():
             source_description=episode["source_description"],
             reference_time=datetime.now(timezone.utc),
         )
-        print(f"Added episode: Freakonomics Radio {i} ({episode['type'].value})")
+        print(f"Added episode: Freakonomics Radio {i} ({episode['name'].value})")
 
 
 async def add_graphiti_episode(
@@ -189,7 +189,7 @@ async def cli_menu():
                 },
             ]
 
-            for i, episode in enumerate(episodes[1:]):
+            for i, episode in enumerate(episodes):
                 resp = await add_graphiti_episode(
                     GRAPHITI_SERVER_URL,
                     name=episode["name"],
