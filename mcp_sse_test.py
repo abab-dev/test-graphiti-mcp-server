@@ -189,7 +189,7 @@ async def cli_menu():
                 },
             ]
 
-            for i, episode in enumerate(episodes[2:]):
+            for i, episode in enumerate(episodes[1:]):
                 resp = await add_graphiti_episode(
                     GRAPHITI_SERVER_URL,
                     name=episode["name"],
