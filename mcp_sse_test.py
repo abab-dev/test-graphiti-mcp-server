@@ -86,7 +86,7 @@ async def add_direct():
             source_description=episode["source_description"],
             reference_time=datetime.now(timezone.utc),
         )
-        print(f"Added episode: Freakonomics Radio {i} ({episode['name'].value})")
+        print(f"Added episode: ({episode['name']})")
 
 
 async def add_graphiti_episode(
