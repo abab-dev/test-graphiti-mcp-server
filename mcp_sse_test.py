@@ -239,7 +239,7 @@ async def search_graphiti_episode(
 
             print(f"Calling 'search_episode' with arguments: {arguments}")
 
-            response = await client.call_tool("search_nodes", arguments)
+            response = await client.call_tool("search_memory_nodes", arguments)
             print(f"Received response: {response}")
 
     except Exception as e:
