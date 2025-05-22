@@ -55,64 +55,35 @@ async def add_direct():
         # Additional code will go here
 
     except Exception as e:
-        print(
-            "An error occurred during Graphiti operations:"
-        )  # Logs the full traceback
-        # You might want to handle specific exceptions differently here
-        # For example:
-        # except neo4j.exceptions.ServiceUnavailable as e:
-        #     logger.error("Failed to connect to Neo4j database: %s", e)
-        # except SomeGeminiAPIError as e:
-        #     logger.error("Gemini API error: %s", e)
+        print("An error occurred during Graphiti operations:")
         raise  # Re-raise the exception after logging
-
-    # Episodes list containing both text and JSON episodes
     episodes = [
-        # {
-        #     "content": "Kamala Harris is the Attorney General of California. She was previously "
-        #     "the district attorney for San Francisco.",
-        #     "type": EpisodeType.text,
-        #     "description": "podcast transcript",
-        # },
         {
-            "content": "As AG, Harris was in office from January 3, 2011 – January 3, 2017",
-            "type": EpisodeType.text,
-            "description": "podcast transcript",
+            "name": "CustomerProfile",
+            "episode_body": '{\\"company\\": {\\"name\\": \\"Acme Technologies\\"}, }',
+            "source": "json",
+            "source_description": "CRM data",
         },
-        # {
-        #     "content": {
-        #         "name": "Gavin Newsom",
-        #         "position": "Governor",
-        #         "state": "California",
-        #         "previous_role": "Lieutenant Governor",
-        #         "previous_location": "San Francisco",
-        #     },
-        #     "type": EpisodeType.json,
-        #     "description": "podcast metadata",
-        # },
-        # {
-        #     "content": {
-        #         "name": "Gavin Newsom",
-        #         "position": "Governor",
-        #         "term_start": "January 7, 2019",
-        #         "term_end": "Present",
-        #     },
-        #     "type": EpisodeType.json,
-        #     "description": "podcast metadata",
-        # },
+        {
+            "name": "CustomerConversation",
+            "episode_body": "user: What's your return policy?\nassistant: You can return items within 30 days.",
+            "source": EpisodeType.text,
+            "source_description": "chat transcript",
+            "group_id": "some_arbitrary_string",
+        },
     ]
 
     # Add episodes to the graph
-    for i, episode in enumerate(episodes):
+    for i, episode in enumerate(episodes[1:2]):
         await graphiti.add_episode(
             name=f"Freakonomics Radio {i}",
             episode_body=(
-                episode["content"]
-                if isinstance(episode["content"], str)
-                else json.dumps(episode["content"])
+                episode["episode_body"]
+                if isinstance(episode["episode_body"], str)
+                else json.dumps(episode["episode_body"])
             ),
-            source=episode["type"],
-            source_description=episode["description"],
+            source=episode["source"],
+            source_description=episode["source_description"],
             reference_time=datetime.now(timezone.utc),
         )
         print(f"Added episode: Freakonomics Radio {i} ({episode['type'].value})")
@@ -150,27 +121,11 @@ async def add_graphiti_episode(
             if uuid is not None:
                 arguments["uuid"] = uuid
 
-            print(f"Calling 'add_episode' with arguments: {arguments}")
+            print(f"Calling 'add_memory' with arguments: {arguments}")
 
-            response = await client.call_tool("add_episode", arguments)
-
-            # The response will be the raw JSON-RPC result value.
-            # We expect it to be a dict like {'message': ...} or {'error': ...}.
+            response = await client.call_tool("add_memory", arguments)
 
             print(f"Received response: {response}")
-
-            # if isinstance(response, dict) and "error" in response:
-            #     print(f"Server returned an error: {response['error']}")
-            #     # Depending on how you want to handle errors, you might raise an exception
-            #     # raise Exception(f"Server error: {response['error']}")
-            #     return response
-            # elif isinstance(response, dict) and "message" in response:
-            #     print(f"Server returned success: {response['message']}")
-            #     return response
-            # else:
-            #     print(f"Unexpected server response format: {response}")
-            #     # Or handle unexpected response format
-            #     raise ValueError(f"Unexpected server response format: {response}")
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -220,29 +175,36 @@ async def cli_menu():
 
             episodes = [
                 {
-                    "content": "As AG, Harris was in office from January 3, 2011 – January 3, 2017",
-                    "type": "message",
-                    "description": "podcast transcript",
-                }
+                    "name": "CustomerProfile",
+                    "episode_body": '{\\"company\\": {\\"name\\": \\"Acme Technologies\\"}, }',
+                    "source": "json",
+                    "source_description": "CRM data",
+                },
+                {
+                    "name": "CustomerConversation",
+                    "episode_body": "user: What's your return policy?\nassistant: You can return items within 30 days.",
+                    "source": EpisodeType.text,
+                    "source_description": "chat transcript",
+                    "group_id": "some_arbitrary_string",
+                },
             ]
 
-            for i, episode in enumerate(episodes):
+            for i, episode in enumerate(episodes[2:]):
                 resp = await add_graphiti_episode(
                     GRAPHITI_SERVER_URL,
-                    name=f"Freakonomics Radio {i}",
+                    name=episode["name"],
                     episode_body=(
-                        episode["content"]
-                        if isinstance(episode["content"], str)
-                        else json.dumps(episode["content"])
+                        episode["episode_body"]
+                        if isinstance(episode["episode_body"], str)
+                        else json.dumps(episode["episode_body"])
                     ),
-                    source=episode["type"],
-                    source_description=episode["description"],
+                    source=episode["source"],
+                    source_description=episode["source_description"],
                     group_id="test_graph_group",
                     uuid=str(uuid.uuid4()),
                 )
-                print(f"Added episode: Freakonomics Radio {i}")
+                print(f"Added episode: {episode['name']}")
                 print(resp)
-
         elif choice == "2":
             query = input("Enter your search query: ")
             await search_graphiti_episode(GRAPHITI_SERVER_URL, query)
@@ -289,67 +251,6 @@ async def clear_db(server_url: str):
     client = Client(SSETransport(server_url))
     async with client:
         resp = await client.call_tool("clear_graph")
-
-
-async def main():
-    episodes = [
-        # {
-        #     "content": "Kamala Harris is the Attorney General of California. She was previously "
-        #     "the district attorney for San Francisco.",
-        #     "type": "message",
-        #     "description": "podcast transcript",
-        # },
-        {
-            "content": "As AG, Harris was in office from January 3, 2011 – January 3, 2017",
-            "type": "message",
-            "description": "podcast transcript",
-        },
-        # {
-        #     "content": {
-        #         "name": "Gavin Newsom",
-        #         "position": "Governor",
-        #         "state": "California",
-        #         "previous_role": "Lieutenant Governor",
-        #         "previous_location": "San Francisco",
-        #     },
-        #     "type": EpisodeType.json,
-        #     "description": "podcast metadata",
-        # },
-        # {
-        #     "content": {
-        #         "name": "Gavin Newsom",
-        #         "position": "Governor",
-        #         "term_start": "January 7, 2019",
-        #         "term_end": "Present",
-        #     },
-        #     "type": EpisodeType.json,
-        #     "description": "podcast metadata",
-        # },
-    ]
-    for i, episode in enumerate(episodes):
-        resp = await add_graphiti_episode(
-            GRAPHITI_SERVER_URL,
-            name=f"Freakonomics Radio {i}",
-            episode_body=(
-                episode["content"]
-                if isinstance(episode["content"], str)
-                else json.dumps(episode["content"])
-            ),
-            source=episode["type"],
-            source_description=episode["description"],
-            group_id="test_graph_group",
-            uuid=str(uuid.uuid4()),
-        )
-        print(f"Added episode: Freakonomics Radio {i}")
-        print(resp)
-
-    # (You can add calls for search_nodes etc. here using the updated functions)
-    response = await search_graphiti_episode(
-        GRAPHITI_SERVER_URL,
-        "Kamala Harris is the Attorney General of California.",
-    )
-    print("search response is ", response)
-    await clear_db(GRAPHITI_SERVER_URL)
 
 
 if __name__ == "__main__":
