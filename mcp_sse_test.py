@@ -76,7 +76,7 @@ async def add_direct():
     # Add episodes to the graph
     for i, episode in enumerate(episodes[1:2]):
         await graphiti.add_episode(
-            name=episode["name"]
+            name=episode["name"],
             episode_body=(
                 episode["episode_body"]
                 if isinstance(episode["episode_body"], str)
